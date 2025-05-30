@@ -1,0 +1,89 @@
+name: Auto TAI Numbering
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-tai-number:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Get highest TAI number across all repos
+        id: get-tai
+        run: |
+          echo "Searching for existing TAI numbers..."
+          
+          # Get all issues with TAI numbers from all repos
+          TAI_NUMBERS=$(gh search issues --owner TundrAI --json title --jq '.[] | select(.title | test("TAI-[0-9]+")) | .title' | grep -o 'TAI-[0-9]\+' | sed 's/TAI-0*//' | sort -n || echo "0")
+          
+          # Get the highest number (default to 0 if none found)
+          if [ -z "$TAI_NUMBERS" ]; then
+            HIGHEST=0
+          else
+            HIGHEST=$(echo "$TAI_NUMBERS" | tail -1)
+          fi
+          
+          # Calculate next TAI number
+          NEXT_NUM=$((HIGHEST + 1))
+          NEXT_TAI=$(printf "TAI-%04d" $NEXT_NUM)
+          
+          echo "Highest existing TAI: $HIGHEST"
+          echo "Next TAI number: $NEXT_TAI"
+          echo "next_tai=$NEXT_TAI" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Check if issue already has TAI number
+        id: check-tai
+        run: |
+          TITLE="${{ github.event.issue.title }}"
+          if [[ "$TITLE" =~ TAI-[0-9]+ ]]; then
+            echo "has_tai=true" >> $GITHUB_OUTPUT
+            echo "Issue already has TAI number: $TITLE"
+          else
+            echo "has_tai=false" >> $GITHUB_OUTPUT
+            echo "Issue needs TAI number: $TITLE"
+          fi
+      
+      - name: Add TAI number to issue title
+        if: steps.check-tai.outputs.has_tai == 'false'
+        run: |
+          ORIGINAL_TITLE="${{ github.event.issue.title }}"
+          NEW_TITLE="${{ steps.get-tai.outputs.next_tai }}: $ORIGINAL_TITLE"
+          
+          echo "Updating issue title..."
+          echo "Original: $ORIGINAL_TITLE"
+          echo "New: $NEW_TITLE"
+          
+          gh issue edit ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --title "$NEW_TITLE"
+          
+          echo "✅ Successfully added TAI number to issue"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Add milestone label if not present
+        if: steps.check-tai.outputs.has_tai == 'false'
+        run: |
+          TAI_NUM=$(echo "${{ steps.get-tai.outputs.next_tai }}" | sed 's/TAI-0*//')
+          
+          # Determine milestone based on TAI number
+          if [ $TAI_NUM -le 9 ]; then
+            MILESTONE_LABEL="milestone-1"
+          elif [ $TAI_NUM -le 22 ]; then
+            MILESTONE_LABEL="milestone-2"
+          else
+            MILESTONE_LABEL="milestone-3"
+          fi
+          
+          echo "Adding milestone label: $MILESTONE_LABEL"
+          gh issue edit ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --add-label "$MILESTONE_LABEL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
