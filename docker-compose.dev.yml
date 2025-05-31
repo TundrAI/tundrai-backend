@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # NestJS Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: tundrai-backend
+    ports:
+      - '3000:3000'
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+      - ./test:/app/test
+      # Preserve node_modules from container
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      # Database
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=tundrai
+      - DB_PASSWORD=tundrai_dev_password
+      - DB_DATABASE=tundrai_dev
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Qdrant
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    depends_on:
+      - postgres
+      - redis
+      - qdrant
+    networks:
+      - tundrai-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: tundrai-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=tundrai
+      - POSTGRES_PASSWORD=tundrai_dev_password
+      - POSTGRES_DB=tundrai_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tundrai-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tundrai-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - tundrai-network
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: tundrai-qdrant
+    ports:
+      - '6333:6333'
+      - '6334:6334' # gRPC port
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - tundrai-network
+
+  # Ollama will be added later when needed
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: tundrai-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - tundrai-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  ollama_data:
+
+networks:
+  tundrai-network:
+    driver: bridge
