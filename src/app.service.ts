@@ -6,3 +6,4 @@ export class AppService {
     return 'Hello World!';
   }
 }
+// Pre-commit test
