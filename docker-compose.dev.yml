@@ -23,7 +23,12 @@ services:
       - DB_PORT=5432
       - DB_USERNAME=tundrai
       - DB_PASSWORD=tundrai_dev_password
-      - DB_DATABASE=tundrai_dev
+      - DB_NAME=tundrai_dev
+      # Admin user seed
+      - ADMIN_EMAIL=admin@tundrai.local
+      - ADMIN_PASSWORD=TundrAI2025!
+      - ADMIN_FIRST_NAME=System
+      - ADMIN_LAST_NAME=Administrator
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
