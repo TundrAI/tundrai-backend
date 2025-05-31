@@ -1,6 +1,6 @@
 // @ts-check
 import eslint from '@eslint/js';
-import eslintPluginImport from 'eslint-plugin-import';
+import * as eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginSonarjs from 'eslint-plugin-sonarjs';
 import globals from 'globals';
