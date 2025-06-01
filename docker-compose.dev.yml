@@ -52,8 +52,10 @@ services:
       - POSTGRES_USER=tundrai
       - POSTGRES_PASSWORD=tundrai_dev_password
       - POSTGRES_DB=tundrai_dev
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - tundrai-network
 

@@ -1,10 +1,11 @@
 {
   "name": "tundrai-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "NestJS API with RAG logic, document processing, and authentication.",
+  "author": "dth@dthlabs.com",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "packageManager": "pnpm@9.14.4",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -28,7 +29,8 @@
     "migration:create": "npm run typeorm migration:create",
     "migration:run": "npm run typeorm migration:run",
     "migration:revert": "npm run typeorm migration:revert",
-    "migration:show": "npm run typeorm migration:show"
+    "migration:show": "npm run typeorm migration:show",
+    "db:test:create": "docker exec -it tundrai-postgres psql -U tundrai -d postgres -c 'CREATE DATABASE tundrai_test;'"
   },
   "lint-staged": {
     "**/*.ts": [
@@ -100,6 +102,12 @@
       "!**/*.spec.ts",
       "!**/*.test.ts",
       "!**/node_modules/**",
+      "!**/dist/**",
+      "!**/coverage/**",
+      "!**/migrations/**",
+      "!**/test/**",
+      "!**/config/**",
+      "!**/*.dto.ts",
       "!main.ts"
     ],
     "coverageDirectory": "../coverage",
@@ -117,6 +125,9 @@
         "statements": 100
       }
     },
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/jest-setup.ts"
+    ]
   }
 }

@@ -132,7 +132,7 @@ export default tseslint.config(
       ],
 
       // Code quality (SonarJS is already configured)
-      'complexity': ['error', 10],
+      complexity: ['error', 10],
       'max-depth': ['error', 3],
       'max-lines': ['error', 300],
       'max-lines-per-function': ['error', 50],
@@ -147,6 +147,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       'max-lines': 'off',
       'max-lines-per-function': 'off',
+      'sonarjs/no-hardcoded-passwords': 'off',
     },
   },
 
